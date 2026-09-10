@@ -114,6 +114,7 @@ jobs:
       - name: Prepare compiled artifact
         run: |
           mkdir -p artifact/ats-mini-${{ steps.slug.outputs.slug }}-${{ matrix.board.artifact-suffix }}
+          cp ats-mini/build/esp32.esp32.esp32s3/ats-mini.ino.bin artifact/ats-mini-${{ steps.slug.outputs.slug }}-${{ matrix.board.artifact-suffix }}-ota.bin
           mv ats-mini/build/esp32.esp32.esp32s3/*.ino.bin ats-mini/build/esp32.esp32.esp32s3/*.ino.*.bin artifact/ats-mini-${{ steps.slug.outputs.slug }}-${{ matrix.board.artifact-suffix }}/
           cp CHANGELOG.md artifact/ats-mini-${{ steps.slug.outputs.slug }}-${{ matrix.board.artifact-suffix }}/
 
@@ -151,7 +152,9 @@ jobs:
       - name: Upload release artifacts
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          FILENAMES: ${{ github.event.repository.name }}-${{ needs.build.outputs.slug }}-*.zip
+          FILENAMES: >-
+            ${{ github.event.repository.name }}-${{ needs.build.outputs.slug }}-*.zip
+            artifact/${{ github.event.repository.name }}-${{ needs.build.outputs.slug }}-*-ota.bin
           SLUG: ${{ needs.build.outputs.slug }}
         run: |
           # shellcheck disable=SC2086
