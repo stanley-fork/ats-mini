@@ -9,7 +9,6 @@ PORT	?= /dev/cu.usbmodem1101
 DEBUG_LEVEL ?= 0
 
 #
-# HALF_STEP       : Enable encoder half-steps
 # BLE_POWER_LEVEL : BLE TX power level, for example ESP_PWR_LVL_N12
 # WIFI_POWER_LEVEL: WiFi TX power level, for example WIFI_POWER_13dBm
 #
@@ -17,10 +16,6 @@ DEFINES = -DDEBUG=$(DEBUG_LEVEL)
 
 ifdef LILYGO_SI473X
         DEFINES += -DLILYGO_SI473X
-endif
-
-ifdef HALF_STEP
-        DEFINES += -DHALF_STEP
 endif
 
 ifdef BLE_POWER_LEVEL
@@ -36,7 +31,7 @@ OPTIONS = \
 	--warnings all
 
 HEADERS = \
-	Common.h Themes.h Menu.h Storage.h tft_setup.h Rotary.h \
+	Common.h Themes.h Menu.h Storage.h Display.h Rotary.h \
 	Utils.h Button.h EIBI.h Remote.h BleMode.h TcpMode.h BlePeripheral.h \
 	BleUartPeripheral.h BleCentral.h BleHidCentral.h \
 	SI4735-fixed.h patch_init.h Splash.h
