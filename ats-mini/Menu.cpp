@@ -181,10 +181,10 @@ int getTotalModes() { return(ITEM_COUNT(bandModeDesc)); }
 //
 
 uint8_t memoryIdx = 0;
-Memory memories[MEMORY_COUNT];
+Memory *memories = nullptr;
 Memory newMemory;
 
-int getTotalMemories() { return(ITEM_COUNT(memories)); }
+int getTotalMemories() { return(MEMORY_COUNT); }
 
 //
 // RDS Menu
@@ -844,14 +844,14 @@ bool tuneToMemory(const Memory *memory)
 
 static void doMemory(int16_t enc)
 {
-  memoryIdx = wrap_range(memoryIdx, enc, 0, LAST_ITEM(memories));
+  memoryIdx = wrap_range(memoryIdx, enc, 0, getTotalMemories() - 1);
   if(!tuneToMemory(&memories[memoryIdx])) tuneToMemory(&newMemory);
 }
 
 static void clickMemory(uint8_t idx, bool shortPress)
 {
   // Must have a valid index
-  if(idx>LAST_ITEM(memories)) return;
+  if(idx>=getTotalMemories()) return;
 
   if(shortPress)
   {
@@ -1295,9 +1295,9 @@ static void drawStep(int x, int y, int sx)
 static void drawSeek(int x, int y, int sx)
 {
   drawCommon(menu[MENU_SEEK], x, y, sx);
-  spr.drawArc(40+x+(sx/2), 66+y, 30, 27, 135, 270, TH.menu_param);
+  spr.fillArc(40+x+(sx/2), 66+y, 30, 27, 135, 270, TH.menu_param);
   spr.fillTriangle(40+x+(sx/2)-5, 66+y-32, 40+x+(sx/2)+5, 66+y-27, 40+x+(sx/2)-5, 66+y-22, TH.menu_param);
-  spr.drawArc(40+x+(sx/2), 66+y, 30, 27, 315, 450, TH.menu_param);
+  spr.fillArc(40+x+(sx/2), 66+y, 30, 27, 315, 450, TH.menu_param);
   spr.fillTriangle(40+x+(sx/2)+5, 66+y+32, 40+x+(sx/2)-5, 66+y+27, 40+x+(sx/2)+5, 66+y+22, TH.menu_param);
 
   if(seekMode()==SEEK_SCHEDULE)
@@ -1317,9 +1317,9 @@ static void drawScan(int x, int y, int sx)
   spr.setTextColor(TH.scan_snr);
   spr.drawString("N", 40+x+(sx/2)+30, 66+y+30, FONT_SMALL);
 
-  spr.drawArc(40+x+(sx/2), 66+y, 30, 27, 135, 270, TH.menu_param);
+  spr.fillArc(40+x+(sx/2), 66+y, 30, 27, 135, 270, TH.menu_param);
   spr.fillTriangle(40+x+(sx/2)-5, 66+y-32, 40+x+(sx/2)+5, 66+y-27, 40+x+(sx/2)-5, 66+y-22, TH.menu_param);
-  spr.drawArc(40+x+(sx/2), 66+y, 30, 27, 315, 450, TH.menu_param);
+  spr.fillArc(40+x+(sx/2), 66+y, 30, 27, 315, 450, TH.menu_param);
   spr.fillTriangle(40+x+(sx/2)+5, 66+y+32, 40+x+(sx/2)-5, 66+y+27, 40+x+(sx/2)+5, 66+y+22, TH.menu_param);
 
   spr.drawLine(40+x+(sx/2)-17, 66+y+5, 40+x+(sx/2)-4, 66+y+5, TH.menu_param);
@@ -1612,7 +1612,7 @@ static void drawMemory(int x, int y, int sx)
   sprintf(label_memory, "%s %2.2d", menu[MENU_MEMORY], memoryIdx + 1);
   drawCommon(label_memory, x, y, sx, true);
 
-  int count = ITEM_COUNT(memories);
+  int count = getTotalMemories();
   for(int i=-2 ; i<3 ; i++)
   {
     int j = abs((memoryIdx+count+i)%count);
