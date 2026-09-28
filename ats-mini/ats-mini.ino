@@ -132,6 +132,10 @@ void setup()
     digitalWrite(PIN_AMP_EN, LOW);
   }
 
+  // Firmware owns the mute pin so library power-up cannot release it
+  pinMode(AUDIO_MUTE, OUTPUT);
+  digitalWrite(AUDIO_MUTE, HIGH);
+
   // Enable SI4732 VDD
   pinMode(PIN_POWER_ON, OUTPUT);
   digitalWrite(PIN_POWER_ON, HIGH);
@@ -212,9 +216,6 @@ void setup()
   // rx.setRefClock(32768);
   // rx.setRefClockPrescaler(1);   // will work with 32768
   // rx.setup(RESET_PIN, 0, MW_BAND_TYPE, SI473X_ANALOG_AUDIO, XOSCEN_RCLK);
-
-  // Attached pin to allows SI4732 library to mute audio as required to minimise loud clicks
-  rx.setAudioMuteMcuPin(AUDIO_MUTE);
 
   // If loading preferences fails...
   if(!prefsLoad(SAVE_SETTINGS|SAVE_VERIFY))
@@ -395,8 +396,8 @@ void useBand(const Band *band)
     {
       // Configure SI4732 for SSB (SI4732 step not used, set to 0)
       rx.setSSB(band->minimumFreq, band->maximumFreq, band->currentFreq, 0, currentMode);
-      // G8PTN: Always enabled
-      rx.setSSBAutomaticVolumeControl(1);
+      // Initialize SSB with automatic AVC and AFC disabled
+      rx.setSSBConfig(getCurrentBandwidth()->idx, 1, 0, 1, 0, 1);
       // G8PTN: Commented out
       //rx.setSsbSoftMuteMaxAttenuation(softMuteMaxAttIdx);
       // To move frequency forward, need to move the BFO backwards
