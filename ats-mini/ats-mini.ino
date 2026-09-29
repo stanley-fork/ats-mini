@@ -7,6 +7,7 @@
 #include "Rotary.h"
 #include "Button.h"
 #include "Menu.h"
+#include "Patches.h"
 #include "Draw.h"
 #include "Storage.h"
 #include "Themes.h"
@@ -64,6 +65,7 @@ int8_t SsbAgcIdx = 0;                   // Default SSB AGCON  : Range = 0 to 1, 
 // AVC index per mode (AM/SSB)
 int8_t AmAvcIdx = 48;                   // Default AM  = 48 (as per AN332), range = 12 to 90 in steps of 2
 int8_t SsbAvcIdx = 48;                  // Default SSB = 48, range = 12 to 90 in steps of 2
+bool ssbAvcHold = false;                // Temporary; cleared when the band/mode is reinitialized
 
 // SoftMute index per mode (AM/SSB)
 int8_t AmSoftMuteIdx = 4;               // Default AM  = 4, range = 0 to 32
@@ -241,6 +243,8 @@ void setup()
   // After the SI4732 has been setup, enable the audio amplifier
   if(PIN_AMP_EN >= 0) digitalWrite(PIN_AMP_EN, HIGH);
 
+  patchesInit();
+
   // SI4732 STARTUP!
   selectBand(bandIdx, false);
   delay(50);
@@ -361,6 +365,7 @@ void useBand(const Band *band)
   currentFrequency = band->currentFreq;
   currentMode = band->bandMode;
   currentBFO = 0;
+  ssbAvcHold = false;
 
   if(band->bandMode==FM)
   {
@@ -1004,6 +1009,7 @@ void loop()
 
   // Tick NETWORK time, connecting to WiFi if requested
   netTickTime();
+  needRedraw |= patchesTick();
 
   // Update clock display
   needRedraw |= clockUpdate();

@@ -23,7 +23,7 @@ static constexpr const lgfx::IFont* FONT_DIGITS  = &lgfx::fonts::Font7;  // 48px
 #define AUTHORS_LINE3  "Goshante, G8PTN (Dave), R9UCL (Max Arnold),"
 #define AUTHORS_LINE4  "Marat Fayzullin"
 
-#define VER_APP        240  // Firmware version
+#define VER_APP        241  // Firmware version
 #define VER_OTA          1  // OTA compatibility; bump when a full USB flash is required
 #define VER_SETTINGS    71  // Settings version
 #define VER_MEMORIES    71  // Memories version
@@ -43,6 +43,9 @@ static constexpr const lgfx::IFont* FONT_DIGITS  = &lgfx::fonts::Font7;  // 48px
 #define RDS_RT        0b00001000  // Radio text
 #define RDS_PT        0b00010000  // Program type
 #define RDS_RBDS      0b00100000  // Use US PTYs
+
+// DSP patch options
+#define DSP_PATCHES_DEFAULT      0
 
 // FM stereo modes
 #define FM_STEREO_AUTO 0 // Let the receiver blend down to mono on weak signals
@@ -201,6 +204,7 @@ extern int8_t AmAgcIdx;
 extern int8_t SsbAgcIdx;
 extern int8_t AmAvcIdx;
 extern int8_t SsbAvcIdx;
+extern bool ssbAvcHold;
 extern int8_t AmSoftMuteIdx;
 extern int8_t SsbSoftMuteIdx;
 extern uint8_t rdsModeIdx;
@@ -210,6 +214,7 @@ extern uint8_t bleModeIdx;
 extern uint8_t wifiModeIdx;
 extern uint8_t FmRegionIdx;
 extern uint8_t fmStereoIdx;
+extern uint8_t dspPatchesIdx;
 
 extern int8_t agcIdx;
 extern int8_t agcNdx;
