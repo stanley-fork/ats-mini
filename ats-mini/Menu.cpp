@@ -7,6 +7,7 @@
 #include "Ota.h"
 #include "BleMode.h"
 #include "Menu.h"
+#include "Memories.h"
 #include "Patches.h"
 
 #include <time.h>
@@ -115,25 +116,25 @@ static const char *menu[] =
 //
 
 #define MENU_BRIGHTNESS   0
-#define MENU_CALIBRATION  1
-#define MENU_RDS          2
-#define MENU_UTCOFFSET    3
-#define MENU_DATETIME     4
-#define MENU_FM_REGION    5
-#define MENU_FM_STEREO    6
-#define MENU_DSP_PATCHES  7
-#define MENU_THEME        8
-#define MENU_UI           9
-#define MENU_ZOOM         10
-#define MENU_SCROLL       11
-#define MENU_SLEEP        12
-#define MENU_SLEEPMODE    13
+#define MENU_DATETIME     1
+#define MENU_UTCOFFSET    2
+#define MENU_SLEEP        3
+#define MENU_SLEEPMODE    4
+#define MENU_THEME        5
+#define MENU_UI           6
+#define MENU_ZOOM         7
+#define MENU_SCROLL       8
+#define MENU_RDS          9
+#define MENU_FM_STEREO    10
+#define MENU_FM_REGION    11
+#define MENU_CALIBRATION  12
+#define MENU_DSP_PATCHES  13
 #define MENU_LOADEIBI     14
-#define MENU_USBMODE      15
-#define MENU_TCPMODE      16
-#define MENU_BLEMODE      17
-#define MENU_WIFIMODE     18
-#define MENU_UPDATEFW     19
+#define MENU_UPDATEFW     15
+#define MENU_USBMODE      16
+#define MENU_TCPMODE      17
+#define MENU_BLEMODE      18
+#define MENU_WIFIMODE     19
 #define MENU_ABOUT        20
 
 
@@ -145,25 +146,25 @@ int8_t settingsIdx = MENU_BRIGHTNESS;
 static const char *settings[] =
 {
   "Brightness",
-  "Calibration",
-  "RDS",
-  "UTC Offset",
   "Date/Time",
-  "FM Region",
-  "FM Stereo",
-  "DSP Patches",
+  "UTC Offset",
+  "Sleep",
+  "Sleep Mode",
   "Theme",
   "UI Layout",
   "Zoom Menu",
   "Scroll Dir.",
-  "Sleep",
-  "Sleep Mode",
+  "RDS",
+  "FM Stereo",
+  "FM Region",
+  "Calibration",
+  "DSP Patches",
   "Load EiBi",
+  "Update FW",
   "USB Port",
   "TCP Port",
   "Bluetooth",
   "Wi-Fi",
-  "Update FW",
   "About",
 };
 
@@ -199,10 +200,7 @@ uint8_t dspPatchesIdx = DSP_PATCHES_DEFAULT;
 //
 
 uint8_t memoryIdx = 0;
-Memory *memories = nullptr;
 Memory newMemory;
-
-int getTotalMemories() { return(MEMORY_COUNT); }
 
 //
 // RDS Menu
@@ -916,7 +914,8 @@ bool tuneToMemory(const Memory *memory)
 static void doMemory(int16_t enc)
 {
   memoryIdx = wrap_range(memoryIdx, enc, 0, getTotalMemories() - 1);
-  if(!tuneToMemory(&memories[memoryIdx])) tuneToMemory(&newMemory);
+  Memory memory = getMemory(memoryIdx);
+  if(!tuneToMemory(&memory)) tuneToMemory(&newMemory);
 }
 
 static void clickMemory(uint8_t idx, bool shortPress)
@@ -927,9 +926,11 @@ static void clickMemory(uint8_t idx, bool shortPress)
   if(shortPress)
   {
     // If clicking on an empty memory slot, save to it
-    if(!memories[idx].freq) memories[idx] = newMemory;
+    Memory memory = getMemory(idx);
+    if(!memory.freq) memory = newMemory;
     // Otherwise, delete memory slot contents
-    else memories[idx].freq = 0;
+    else memory.freq = 0;
+    setMemory(idx, memory);
   }
   // On a click, do nothing, slot already activated in doMemory()
   else currentCmd = CMD_NONE;
@@ -1711,15 +1712,18 @@ static void drawMemory(int x, int y, int sx)
   for(int i=-2 ; i<3 ; i++)
   {
     int j = abs((memoryIdx+count+i)%count);
+    const Memory memory = getMemory(j);
     char buf[16];
     const char *text = buf;
 
-    if(!memories[j].freq)
+    if(!memory.freq)
       text = "- - -";
-    else if(memories[j].mode==FM)
-      sprintf(buf, "%3.2f %s", memories[j].freq / 1000000.0, bandModeDesc[memories[j].mode]);
+    else if(memory.name[0])
+      text = memory.name;
+    else if(memory.mode==FM)
+      sprintf(buf, "%3.2f %s", memory.freq / 1000000.0, bandModeDesc[memory.mode]);
     else
-      sprintf(buf, "%5lu %s", memories[j].freq / 1000, bandModeDesc[memories[j].mode]);
+      sprintf(buf, "%5lu %s", memory.freq / 1000, bandModeDesc[memory.mode]);
 
     if(i==0) {
       drawZoomedMenu(text);
