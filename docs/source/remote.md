@@ -133,11 +133,17 @@ The ad hoc protocol is the main remote-control protocol. It can be used over:
 
 Memory names can contain up to 9 printable ASCII characters. Omit the name field to keep the existing name, or append a comma with no name to clear it (for example, `#01,VHF,107900000,FM,`). The `$` command includes non-empty names in its output.
 
+End `F` and `#` commands with CR, LF, or CRLF.
+
+Incomplete commands time out after 30 seconds without input. Send CR or LF to recover after a timeout or cancel an incomplete theme update.
+
 ```{hint}
 To edit, back up, or restore memory slots, use the receiver's **Memory** page over [Wi-Fi](manual.md#wi-fi). For older firmware, use the [legacy USB memory editor](memory.md).
 ```
 
 #### Monitor output
+
+Status logging is disabled when Bluetooth or TCP reconnects.
 
 The following comma separated information is sent out when the monitor (log) mode is enabled:
 
@@ -162,6 +168,8 @@ The following comma separated information is sent out when the monitor (log) mod
 In SSB mode, the "Display" frequency (Hz) = (currentFrequency x 1000) + currentBFO
 
 #### Making screenshots
+
+Over Wi-Fi, select **Download screenshot** on the web interface's status page to save a BMP image. The web login is required if configured. Only one screenshot download can run at a time.
 
 The screenshot function is intended for interface and theme designers, as well as for the documentation writers. The `C` command dumps the screen to the remote console as a BMP image in HEX format. To convert it to an image file, you need to convert the HEX string to binary format.
 

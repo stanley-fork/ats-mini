@@ -7,6 +7,7 @@
 
 static constexpr uint16_t DISPLAY_WIDTH  = 320;
 static constexpr uint16_t DISPLAY_HEIGHT = 170;
+static constexpr uint32_t BMP_FILE_SIZE = 66 + (uint32_t)DISPLAY_WIDTH * DISPLAY_HEIGHT * 2;
 
 // Shorthands for the LovyanGFX fonts used by the UI
 static constexpr const lgfx::IFont* FONT_DEFAULT = &lgfx::fonts::Font0;  // 6x8 system font
@@ -263,12 +264,10 @@ bool ntpSyncTime();
 
 void netRequestConnect();
 void netTickTime();
+void netScreenshotTick();
 
-// Remote.c
-#define REMOTE_CHANGED   1
-#define REMOTE_CLICK     2
-#define REMOTE_SHORT_PRESS 8
-#define REMOTE_PRESSED   16
-#define REMOTE_DIRECTION 8
+// Shared receiver control actions. Return whether the display needs updating.
+bool handleRotation(int16_t enc, int16_t accelerated, bool pressed = false);
+bool handleClick(bool shortPress);
 
 #endif // COMMON_H
