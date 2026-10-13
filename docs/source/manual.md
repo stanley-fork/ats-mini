@@ -10,7 +10,7 @@
 * **Wi-Fi icon** (top right area near the battery). Different colors indicate the connection status.
 * **Battery status** (top right corner). It doesn't show the voltage when charged, see [#36](https://github.com/esp32-si4732/ats-mini/issues/36#issuecomment-2778356143). The only indication that the battery is charging is the hardware LED on the bottom of the receiver, which turns ON during charging.
 * **Band name and modulation** (VHF & FM, top center). See the [Bands table](#bands-table) for more details.
-* **Info panel** (the box on the left side), also **Menu**. The parameters are explained in the [Menu](#menu) section. Also it can show the current time, or the date and time after a successful synchronization.
+* **Info panel** (the box on the left side), also **Menu**. The parameters are explained in the [Menu](#menu) section. It can also show the current time, or the date and time after a successful synchronization. When Off Timer is enabled, this row alternates with the remaining time as **Zzz: hh:mm**. If the clock is not set, only the countdown is shown.
 * **Frequency** (center of the screen).
 * **FM station name** (RDS PS) or **frequency name** (right below the frequency). A frequency name appears for some popular frequencies like FT8, SSTV, CB channels, or a shortwave [schedule](#schedule). Can also display current **menu option** using a bigger font when the Zoom Menu setting is enabled.
 * **Tuning scale** (bottom of the screen). Can be replaced with additional RDS fields (RT, PTY) when extended RDS is enabled, or RSSI/SNR graphs in Scan mode.
@@ -70,8 +70,9 @@ The menu can be invoked by clicking the encoder button and is closed automatical
 * **Brightness** - Display brightness level (10...255). The minimal one draws about 80mA of the battery power, the default one about 100mA, the max level about 120mA.
 * **Date/Time** - Set the UTC date and time with the encoder. Click to select the next field, or short press to set the clock and close the menu. A timeout closes the menu without changing the clock.
 * **UTC Offset** - Affects the displayed date and time. Please note that automatic DST transitions are not supported; the offset needs to be adjusted manually.
-* **Sleep** - Automatic sleep interval in seconds (0 - disabled).
+* **Sleep Timer** - Automatic sleep interval in seconds (Off - disabled).
 * **Sleep Mode** - Locked - lock the encoder rotation during sleep; Unlocked - allow tuning the frequency in sleep mode; CPU Sleep - the maximum power saving mode. With the display being on, default brightness, and Wi-Fi the power consumption is about 170mA, without Wi-Fi 100mA, Locked/Unlocked modes draw about 70mA, CPU sleep mode draws about 40mA.
+* **Off Timer** - Shut down after 5–240 minutes, in 5-minute steps. Turn the encoder to start or restart the timer; short press to disable it (Off). The remaining time alternates with the date and time in the info panel. The timer works during sleep and restarts on each power-up. After shutdown, cycle the power switch to restart the receiver. This is not a true power-off state: the receiver still draws some current.
 * **Theme** - Color theme.
 * **UI Layout** - Alternative UI layouts. For now there is just one alternative UI with large S-meter and S/N-meter.
 * **Zoom Menu** - Display the currently selected menu item using a larger font (accessibility option).
@@ -109,7 +110,7 @@ There are a couple of modes:
 * **AP Only** - Access Point mode. The receiver creates its own access point called `ATS-Mini` and starts the web server on <http://10.1.1.1>.
 * **AP+Connect** - Access Point mode + try to connect to one of the three configured access points. If the connection succeeds, the receiver will synchronize the time every 5 minutes and start the web server on both <http://10.1.1.1> and a dynamic IP address it got from the configured access point.
 * **Connect** - try to connect to one of the three configured access points, start the web server on a dynamic IP, then synchronize the time every 5 minutes.
-* **Sync Only** - same as Connect, but Wi-Fi will be disabled after a successful time synchronization.
+* **Sync Only** - connect to synchronize the clock, then disable Wi-Fi. Wi-Fi is also disabled if connection or time synchronization times out.
 
 Initial configuration:
 

@@ -18,6 +18,7 @@
 #include "BleMode.h"
 #include "TcpMode.h"
 #include "Splash.h"
+#include "Web.h"
 #include <stdlib.h>
 #include <time.h>
 
@@ -29,9 +30,7 @@
 #define DEFAULT_SLEEP            0  // Default sleep interval, range = 0 (off) to 255 in steps of 5
 #define RDS_CHECK_TIME         250  // Increased from 90
 #define SEEK_TIMEOUT        600000  // Max seek timeout (ms)
-#define NTP_CHECK_TIME       60000  // NTP time refresh period (ms)
 #define SCHEDULE_CHECK_TIME   2000  // How often to identify the same frequency (ms)
-#define BACKGROUND_REFRESH_TIME 5000    // Background screen refresh time. Covers the situation where there are no other events causing a refresh
 
 // =================================
 // CONSTANTS AND VARIABLES
@@ -50,7 +49,6 @@ long elapsedButton = millis();
 
 long lastStrengthCheck = millis();
 long lastRDSCheck = millis();
-long lastNTPCheck = millis();
 long lastScheduleCheck = millis();
 
 long elapsedCommand = millis();
@@ -231,6 +229,9 @@ void setup()
     while(digitalRead(ENCODER_PUSH_BUTTON)!=LOW) delay(100);
     while(digitalRead(ENCODER_PUSH_BUTTON)==LOW) delay(100);
   }
+
+  // Start a fresh countdown using the configured duration.
+  offTimerRestart();
 
   // If loading memories fails, save default memories
   if(!prefsLoad(SAVE_MEMORIES|SAVE_VERIFY)) prefsSave(SAVE_MEMORIES);
@@ -845,7 +846,8 @@ bool handleClick(bool shortPress)
 //
 void loop()
 {
-  netScreenshotTick();
+  webScreenshotTick();
+  offTimerTick();
   bool needRedraw = false;
   uint32_t encCounts = consumeEncoderCounts();
   int16_t encCount = (int16_t)(encCounts & 0xFFFF);
@@ -920,20 +922,13 @@ void loop()
     lastScheduleCheck = currentTime;
   }
 
-  // Periodically synchronize time via NTP
-  if((currentTime - lastNTPCheck) > NTP_CHECK_TIME)
-  {
-    needRedraw |= ntpSyncTime();
-    lastNTPCheck = currentTime;
-  }
-
   // Tick preferences time, saving changes when there has
   // been no activity for a while
   prefsTickTime();
 
-  // Tick NETWORK time, connecting to WiFi if requested
-  netTickTime();
-  needRedraw |= patchesTick();
+  // Apply queued web operations, then advance WiFi and time synchronization.
+  needRedraw |= webTick();
+  needRedraw |= netTickTime();
 
   // Update clock display
   needRedraw |= clockUpdate();

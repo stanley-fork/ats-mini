@@ -19,6 +19,19 @@ A short video tutorial on how to build a custom firmware version ([YouTube mirro
 arduino-cli compile --clean -e -p COM_PORT -u ats-mini
 ```
 
+Build profiles are defined in `ats-mini/sketch.yaml`. Choose the profile matching your receiver's PSRAM with `--profile`: `esp32s3-ospi` for Octal PSRAM or `esp32s3-qspi` for Quad PSRAM. Without this option, Arduino CLI uses `esp32s3-ospi`.
+
+To compile without flashing:
+
+```shell
+arduino-cli compile --clean --profile esp32s3-ospi ats-mini
+arduino-cli compile --clean --profile esp32s3-qspi ats-mini
+```
+
+Run the command for your profile. Add `-e` to export the firmware binaries, and `-p COM_PORT -u` to flash them. Arduino CLI installs the platform and library versions specified in the selected profile automatically.
+
+Omit `--clean` for faster subsequent builds, which reuse previously compiled files.
+
 When a library gets upgraded in the `sketch.yaml` project configuration file, it might be necessary to run the following commands to ensure that the Arduino CLI has the most current information about available platforms and libraries:
 
 ```shell
@@ -93,7 +106,7 @@ To decode a stack trace (printed via serial port) use the following tool: <https
 
 The web UI templates live in `ats-mini/Page*.h`. Edit the HTML, CSS, and JavaScript inside the `R"HTML(...)HTML"` raw strings; no generation step is needed before compiling.
 
-`PageCommon.h` contains the shared document layout, navigation, and styles. The other page headers contain each page and its repeated fragments. `Network.cpp` supplies the values and handles requests.
+`PageCommon.h` contains the shared document layout, navigation, and styles. The other page headers contain each page and its repeated fragments. `Web.cpp` supplies the values and handles requests.
 
 The renderer in `PageTemplate.h` replaces `{{name}}` with an HTML-escaped value for text or a quoted attribute. Use `{{{name}}}` only for trusted HTML fragments rendered by the firmware. Values are inserted once, so braces inside a value are not interpreted as another placeholder. These placeholders are not intended for JavaScript or CSS values.
 

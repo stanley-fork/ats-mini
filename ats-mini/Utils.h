@@ -13,6 +13,9 @@
 // Get firmware version
 const char *getVersion(bool shorter = false);
 
+// HTTP User-Agent for downloads
+String getUserAgent();
+
 // Hardware info
 const char *getMACAddress();
 
@@ -22,6 +25,12 @@ int getStrength(int rssi);
 // Set, reset, toggle, or query switches
 bool sleepOn(int x = 2);
 bool muteOn(uint8_t mode, int x = 2);
+
+// Configured duration is saved; a fresh countdown starts on power-up.
+extern uint16_t offTimerMinutes;
+void offTimerRestart();
+uint16_t offTimerRemainingMinutes();
+void offTimerTick();
 
 // Main task only. Strings are copied; duration 0 keeps the status until replaced or cleared.
 // Pass nullptr for both lines to clear the status.
@@ -38,6 +47,7 @@ bool clockGetDate(uint16_t *year, uint8_t *month, uint8_t *day, uint8_t *weekday
 bool clockUTCDateTimeToEpoch(int year, int month, int day, int hour, int minute, int second, uint32_t *epoch);
 bool clockSetEpoch(uint32_t epoch);
 void clockReset();
+void clockTimeSynchronized();
 bool clockUpdate();
 
 // Helpers to convert from/to Hz
