@@ -153,18 +153,20 @@ static const char *menu[] =
 #define MENU_UI           7
 #define MENU_ZOOM         8
 #define MENU_SCROLL       9
-#define MENU_RDS          10
-#define MENU_FM_STEREO    11
-#define MENU_FM_REGION    12
-#define MENU_CALIBRATION  13
-#define MENU_DSP_PATCHES  14
-#define MENU_LOADEIBI     15
-#define MENU_UPDATEFW     16
-#define MENU_USBMODE      17
-#define MENU_TCPMODE      18
-#define MENU_BLEMODE      19
-#define MENU_WIFIMODE     20
-#define MENU_ABOUT        21
+#define MENU_ENC_ACCEL    10
+#define MENU_RDS          11
+#define MENU_FM_STEREO    12
+#define MENU_FM_REGION    13
+#define MENU_ANTCAP       14
+#define MENU_CALIBRATION  15
+#define MENU_DSP_PATCHES  16
+#define MENU_LOADEIBI     17
+#define MENU_UPDATEFW     18
+#define MENU_USBMODE      19
+#define MENU_TCPMODE      20
+#define MENU_BLEMODE      21
+#define MENU_WIFIMODE     22
+#define MENU_ABOUT        23
 
 
 static uint8_t updateFwIdx = 0;
@@ -184,9 +186,11 @@ static const char *settings[] =
   "UI Layout",
   "Zoom Menu",
   "Scroll Dir.",
+  "Enc. Accel.",
   "RDS",
   "FM Stereo",
   "FM Region",
+  "Capacitor",
   "Calibration",
   "DSP Patches",
   "Load EiBi",
@@ -821,6 +825,13 @@ void doFmStereo(int16_t enc)
   if(enc) prefsRequestSave(SAVE_SETTINGS);
 }
 
+static void doAntennaCapacitor()
+{
+  autoAntennaCapacitor = !autoAntennaCapacitor;
+  if(currentMode != FM) selectBand(bandIdx, false);
+  prefsRequestSave(SAVE_SETTINGS);
+}
+
 static uint8_t dspPatchSlots(uint8_t slots[PATCH_SET_COUNT + 1], uint8_t &selected)
 {
   uint8_t count = 1;
@@ -941,6 +952,12 @@ static void doUTCOffset(int16_t enc)
 static void doZoom(int16_t enc)
 {
   zoomMenu = !zoomMenu;
+  prefsRequestSave(SAVE_SETTINGS);
+}
+
+static void doEncoderAcceleration()
+{
+  encoderAcceleration = !encoderAcceleration;
   prefsRequestSave(SAVE_SETTINGS);
 }
 
@@ -1324,6 +1341,7 @@ static void clickSettings(int cmd, bool shortPress)
       currentCmd = CMD_DATETIME;
       break;
     case MENU_ZOOM:       currentCmd = CMD_ZOOM;       break;
+    case MENU_ENC_ACCEL:  currentCmd = CMD_ENC_ACCEL;  break;
     case MENU_SCROLL:     currentCmd = CMD_SCROLL;     break;
     case MENU_OFFTIMER:
       if(shortPress) receiverShutdown();
@@ -1341,6 +1359,7 @@ static void clickSettings(int cmd, bool shortPress)
     case MENU_WIFIMODE:   currentCmd = CMD_WIFIMODE;   break;
     case MENU_FM_REGION:  currentCmd = CMD_FM_REGION; break;
     case MENU_FM_STEREO:  currentCmd = CMD_FM_STEREO; break;
+    case MENU_ANTCAP:     currentCmd = CMD_ANTCAP;    break;
     case MENU_DSP_PATCHES: currentCmd = CMD_DSP_PATCHES; break;
     case MENU_ABOUT:      currentCmd = CMD_ABOUT;     break;
     case MENU_UPDATEFW:
@@ -1373,6 +1392,7 @@ bool doSideBar(uint16_t cmd, int16_t enc, int16_t enca)
     case CMD_AVC:        doAvc(enc);break;
     case CMD_FM_REGION:  doFmRegion(scrollDirection * enc);break;
     case CMD_FM_STEREO:  doFmStereo(scrollDirection * enc);break;
+    case CMD_ANTCAP:     doAntennaCapacitor();break;
     case CMD_DSP_PATCHES: doDspPatches(scrollDirection * enc);break;
     case CMD_SETTINGS:   doSettings(scrollDirection * enc);break;
     case CMD_BRT:        doBrt(enca);break;
@@ -1389,6 +1409,7 @@ bool doSideBar(uint16_t cmd, int16_t enc, int16_t enca)
     case CMD_BLEMODE:    doBleMode(scrollDirection * enc);break;
     case CMD_WIFIMODE:   doWiFiMode(scrollDirection * enc);break;
     case CMD_ZOOM:       doZoom(enc);break;
+    case CMD_ENC_ACCEL:  doEncoderAcceleration();break;
     case CMD_SCROLL:     doScrollDir(enc);break;
     case CMD_UTCOFFSET:  doUTCOffset(scrollDirection * enc);break;
     case CMD_DATETIME:   doDateTime(enc);break;
@@ -2197,6 +2218,26 @@ static void drawZoom(int x, int y, int sx)
   spr.drawString(zoomMenu ? "On" : "Off", 40+x+(sx/2), 60+y, FONT_LARGE);
 }
 
+static void drawAntennaCapacitor(int x, int y, int sx)
+{
+  drawCommon(settings[MENU_ANTCAP], x, y, sx);
+  drawZoomedMenu(settings[MENU_ANTCAP]);
+  spr.setTextDatum(MC_DATUM);
+
+  spr.setTextColor(TH.menu_param);
+  spr.drawString(autoAntennaCapacitor ? "On" : "Off", 40+x+(sx/2), 60+y, FONT_LARGE);
+}
+
+static void drawEncoderAcceleration(int x, int y, int sx)
+{
+  drawCommon(settings[MENU_ENC_ACCEL], x, y, sx);
+  drawZoomedMenu(settings[MENU_ENC_ACCEL]);
+  spr.setTextDatum(MC_DATUM);
+
+  spr.setTextColor(TH.menu_param);
+  spr.drawString(encoderAcceleration ? "On" : "Off", 40+x+(sx/2), 60+y, FONT_LARGE);
+}
+
 static void drawScrollDir(int x, int y, int sx)
 {
   drawCommon(settings[MENU_SCROLL], x, y, sx);
@@ -2329,6 +2370,7 @@ void drawSideBar(uint16_t cmd, int x, int y, int sx)
     case CMD_AVC:        drawAvc(x, y, sx);        break;
     case CMD_FM_REGION:  drawFmRegion(x, y, sx);   break;
     case CMD_FM_STEREO:  drawFmStereo(x, y, sx);   break;
+    case CMD_ANTCAP:     drawAntennaCapacitor(x, y, sx);break;
     case CMD_DSP_PATCHES: drawDspPatches(x, y, sx); break;
     case CMD_BRT:        drawBrt(x, y, sx);        break;
     case CMD_RDS:        drawRDSMode(x, y, sx);    break;
@@ -2342,6 +2384,7 @@ void drawSideBar(uint16_t cmd, int x, int y, int sx)
     case CMD_WIFIMODE:   drawWiFiMode(x, y, sx);   break;
     case CMD_UPDATEFW:   drawUpdateFW(x, y, sx);   break;
     case CMD_ZOOM:       drawZoom(x, y, sx);       break;
+    case CMD_ENC_ACCEL:  drawEncoderAcceleration(x, y, sx);break;
     case CMD_SCROLL:     drawScrollDir(x, y, sx);  break;
     case CMD_UTCOFFSET:  drawUTCOffset(x, y, sx);  break;
     case CMD_DATETIME:   drawDateTime(x, y, sx);   break;
